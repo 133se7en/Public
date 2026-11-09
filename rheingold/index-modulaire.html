@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🜊 L'Or du Rhin — Une aventure dans le Rheingold de Wagner</title>
+<style>
+  :root {
+    --bg: #0a0d18;
+    --panel: #131829;
+    --panel2: #1a2138;
+    --gold: #d4af37;
+    --gold-dim: #8a7326;
+    --text: #d8dcea;
+    --muted: #8b93ad;
+    --accent: #5a7bd8;
+    --danger: #c05555;
+    --success: #5ab87a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% -10%, #1a2242 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    text-align: center;
+    padding: 14px 10px 8px;
+    border-bottom: 1px solid var(--gold-dim);
+    background: linear-gradient(180deg, rgba(212,175,55,.08), transparent);
+  }
+  header h1 {
+    font-variant: small-caps;
+    letter-spacing: 4px;
+    color: var(--gold);
+    font-size: 1.6rem;
+    text-shadow: 0 0 18px rgba(212,175,55,.35);
+  }
+  header .sub { color: var(--muted); font-style: italic; font-size: .85rem; }
+  #layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 12px;
+    padding: 12px;
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  @media (max-width: 900px) { #layout { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel);
+    border: 1px solid #2a3350;
+    border-radius: 10px;
+    padding: 14px;
+  }
+  #main-panel { display: flex; flex-direction: column; min-height: 60vh; }
+  #location {
+    font-variant: small-caps;
+    color: var(--gold);
+    font-size: 1.25rem;
+    border-bottom: 1px solid var(--gold-dim);
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  #story {
+    flex: 1;
+    line-height: 1.65;
+    padding: 6px 2px;
+    min-height: 200px;
+    max-height: 55vh;
+    overflow-y: auto;
+    font-size: 1.02rem;
+  }
+  #story > div { margin-bottom: 10px; white-space: pre-wrap; }
+  #story .dim { color: var(--muted); }
+  #story .gold { color: var(--gold); }
+  #story .danger { color: var(--danger); }
+  #story .rhine { color: #7db3dd; }
+  #story .success { color: var(--success); }
+  #choices { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
+  .choice {
+    text-align: left;
+    background: var(--panel2);
+    border: 1px solid #34406a;
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .98rem;
+    transition: all .15s;
+  }
+  .choice:hover { border-color: var(--gold); background: #223054; color: #fff; }
+  .choice.quest { border-left: 4px solid var(--accent); }
+  .choice.gold { border-left: 4px solid var(--gold); }
+  #sidebar { display: flex; flex-direction: column; gap: 12px; }
+  .panel h3 {
+    font-variant: small-caps;
+    color: var(--gold);
+    letter-spacing: 2px;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #2a3350;
+    padding-bottom: 4px;
+  }
+  .stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: .92rem; }
+  .stat .val { color: var(--gold); }
+  .bar { height: 8px; background: #0d1120; border-radius: 4px; margin: 3px 0 7px; overflow: hidden; border: 1px solid #2a3350;}
+  .bar > div { height: 100%; transition: width .3s; }
+  #hp-bar > div { background: linear-gradient(90deg, #b04a4a, #d47a4a); }
+  #honor-bar > div { background: linear-gradient(90deg, #4a6ab0, #7ab0d4); }
+  .tag {
+    display: inline-block;
+    background: #223054;
+    border: 1px solid #34406a;
+    border-radius: 12px;
+    padding: 2px 9px;
+    font-size: .82rem;
+    margin: 2px 3px 2px 0;
+    cursor: help;
+  }
+  .tag.item { color: var(--gold); border-color: var(--gold-dim); }
+  .tag.skill { color: #9ad4b0; border-color: #2f6a4a; }
+  #log { font-size: .82rem; color: var(--muted); max-height: 120px; overflow-y: auto; line-height: 1.5;}
+  #log div { padding: 1px 0; border-bottom: 1px dotted #1c2440;}
+  .topbtns { display: flex; gap: 8px; justify-content: center; margin-top: 6px; flex-wrap: wrap; }
+  .tbtn {
+    background: transparent; border: 1px solid var(--gold-dim); color: var(--gold);
+    padding: 4px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: .85rem;
+  }
+  .tbtn:hover { background: rgba(212,175,55,.12); }
+  #overlay {
+    position: fixed; inset: 0; background: rgba(4,6,12,.88);
+    display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  #overlay .box {
+    background: var(--panel); border: 1px solid var(--gold-dim); border-radius: 12px;
+    max-width: 640px; width: 100%; padding: 24px; max-height: 90vh; overflow-y: auto;
+  }
+  #overlay h2 { color: var(--gold); font-variant: small-caps; letter-spacing: 3px; margin-bottom: 12px; }
+  #overlay p { line-height: 1.6; margin-bottom: 10px; }
+  .riddle-input {
+    width: 100%; padding: 10px; background: #0d1120; border: 1px solid var(--gold-dim);
+    color: var(--gold); font-family: inherit; font-size: 1rem; border-radius: 6px; margin: 8px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🜊 L'Or du Rhin</h1>
+  <div class="sub">Une aventure au cœur de <em>Das Rheingold</em> de Richard Wagner</div>
+  <div class="topbtns">
+    <button class="tbtn" onclick="Game.showHelp()">📜 Aide</button>
+    <button class="tbtn" onclick="Game.saveGame()">💾 Sauvegarder</button>
+    <button class="tbtn" onclick="Game.loadGame()">📂 Charger</button>
+    <button class="tbtn" onclick="Game.showQuests()">🗡 Quêtes</button>
+    <button class="tbtn" onclick="Game.showAchievements()">🏆 Hauts faits</button>
+    <button class="tbtn" onclick="Game.restart()">↺ Recommencer</button>
+  </div>
+</header>
+
+<div id="layout">
+  <div class="panel" id="main-panel">
+    <div id="location">…</div>
+    <div id="story"></div>
+    <div id="choices"></div>
+  </div>
+
+  <div id="sidebar">
+    <div class="panel" id="stats-panel">
+      <h3>✦ État</h3>
+      <div class="stat"><span>Nom</span><span class="val" id="s-name">—</span></div>
+      <div class="stat"><span>Acte</span><span class="val" id="s-act">I</span></div>
+      <div class="stat"><span>Vigueur</span><span class="val" id="s-hp">—</span></div>
+      <div class="bar" id="hp-bar"><div style="width:100%"></div></div>
+      <div class="stat"><span>Honneur</span><span class="val" id="s-honor">—</span></div>
+      <div class="bar" id="honor-bar"><div style="width:50%"></div></div>
+      <div class="stat"><span>Or</span><span class="val" id="s-gold">0</span></div>
+      <div class="stat"><span>Renoncement</span><span class="val" id="s-love">—</span></div>
+      <div class="stat"><span>Temps</span><span class="val" id="s-time">Aube</span></div>
+    </div>
+    <div class="panel">
+      <h3>🎒 Sacoche</h3>
+      <div id="inv"></div>
+      <h3 style="margin-top:12px">🎼 Savoirs</h3>
+      <div id="skills"></div>
+    </div>
+    <div class="panel">
+      <h3>📖 Journal</h3>
+      <div id="log"></div>
+    </div>
+  </div>
+</div>
+
+<div id="overlay"><div class="box" id="overlay-content"></div></div>
+
+<script src="rheingold_data.js"></script>
+<script src="rheingold_events.js"></script>
+<script src="rheingold_extra.js"></script>
+<script src="rheingold.js"></script>
+</body>
+</html>

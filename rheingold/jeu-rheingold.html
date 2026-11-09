@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🜊 L'Or du Rhin — Une aventure dans le Rheingold de Wagner</title>
+<style>
+  :root {
+    --bg: #0a0d18;
+    --panel: #131829;
+    --panel2: #1a2138;
+    --gold: #d4af37;
+    --gold-dim: #8a7326;
+    --text: #d8dcea;
+    --muted: #8b93ad;
+    --accent: #5a7bd8;
+    --danger: #c05555;
+    --success: #5ab87a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(ellipse at 50% -10%, #1a2242 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    text-align: center;
+    padding: 14px 10px 8px;
+    border-bottom: 1px solid var(--gold-dim);
+    background: linear-gradient(180deg, rgba(212,175,55,.08), transparent);
+  }
+  header h1 {
+    font-variant: small-caps;
+    letter-spacing: 4px;
+    color: var(--gold);
+    font-size: 1.6rem;
+    text-shadow: 0 0 18px rgba(212,175,55,.35);
+  }
+  header .sub { color: var(--muted); font-style: italic; font-size: .85rem; }
+  #layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 12px;
+    padding: 12px;
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  @media (max-width: 900px) { #layout { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel);
+    border: 1px solid #2a3350;
+    border-radius: 10px;
+    padding: 14px;
+  }
+  #main-panel { display: flex; flex-direction: column; min-height: 60vh; }
+  #location {
+    font-variant: small-caps;
+    color: var(--gold);
+    font-size: 1.25rem;
+    border-bottom: 1px solid var(--gold-dim);
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  #story {
+    flex: 1;
+    line-height: 1.65;
+    padding: 6px 2px;
+    min-height: 200px;
+    max-height: 55vh;
+    overflow-y: auto;
+    font-size: 1.02rem;
+  }
+  #story > div { margin-bottom: 10px; white-space: pre-wrap; }
+  #story .dim { color: var(--muted); }
+  #story .gold { color: var(--gold); }
+  #story .danger { color: var(--danger); }
+  #story .rhine { color: #7db3dd; }
+  #story .success { color: var(--success); }
+  #choices { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
+  .choice {
+    text-align: left;
+    background: var(--panel2);
+    border: 1px solid #34406a;
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .98rem;
+    transition: all .15s;
+  }
+  .choice:hover { border-color: var(--gold); background: #223054; color: #fff; }
+  .choice.quest { border-left: 4px solid var(--accent); }
+  .choice.gold { border-left: 4px solid var(--gold); }
+  #sidebar { display: flex; flex-direction: column; gap: 12px; }
+  .panel h3 {
+    font-variant: small-caps;
+    color: var(--gold);
+    letter-spacing: 2px;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #2a3350;
+    padding-bottom: 4px;
+  }
+  .stat { display: flex; justify-content: space-between; padding: 3px 0; font-size: .92rem; }
+  .stat .val { color: var(--gold); }
+  .bar { height: 8px; background: #0d1120; border-radius: 4px; margin: 3px 0 7px; overflow: hidden; border: 1px solid #2a3350;}
+  .bar > div { height: 100%; transition: width .3s; }
+  #hp-bar > div { background: linear-gradient(90deg, #b04a4a, #d47a4a); }
+  #honor-bar > div { background: linear-gradient(90deg, #4a6ab0, #7ab0d4); }
+  .tag {
+    display: inline-block;
+    background: #223054;
+    border: 1px solid #34406a;
+    border-radius: 12px;
+    padding: 2px 9px;
+    font-size: .82rem;
+    margin: 2px 3px 2px 0;
+    cursor: help;
+  }
+  .tag.item { color: var(--gold); border-color: var(--gold-dim); }
+  .tag.skill { color: #9ad4b0; border-color: #2f6a4a; }
+  #log { font-size: .82rem; color: var(--muted); max-height: 120px; overflow-y: auto; line-height: 1.5;}
+  #log div { padding: 1px 0; border-bottom: 1px dotted #1c2440;}
+  .topbtns { display: flex; gap: 8px; justify-content: center; margin-top: 6px; flex-wrap: wrap; }
+  .tbtn {
+    background: transparent; border: 1px solid var(--gold-dim); color: var(--gold);
+    padding: 4px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: .85rem;
+  }
+  .tbtn:hover { background: rgba(212,175,55,.12); }
+  #overlay {
+    position: fixed; inset: 0; background: rgba(4,6,12,.88);
+    display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  #overlay .box {
+    background: var(--panel); border: 1px solid var(--gold-dim); border-radius: 12px;
+    max-width: 640px; width: 100%; padding: 24px; max-height: 90vh; overflow-y: auto;
+  }
+  #overlay h2 { color: var(--gold); font-variant: small-caps; letter-spacing: 3px; margin-bottom: 12px; }
+  #overlay p { line-height: 1.6; margin-bottom: 10px; }
+  .riddle-input {
+    width: 100%; padding: 10px; background: #0d1120; border: 1px solid var(--gold-dim);
+    color: var(--gold); font-family: inherit; font-size: 1rem; border-radius: 6px; margin: 8px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🜊 L'Or du Rhin</h1>
+  <div class="sub">Une aventure au cœur de <em>Das Rheingold</em> de Richard Wagner</div>
+  <div class="topbtns">
+    <button class="tbtn" onclick="Game.showHelp()">📜 Aide</button>
+    <button class="tbtn" onclick="Game.saveGame()">💾 Sauvegarder</button>
+    <button class="tbtn" onclick="Game.loadGame()">📂 Charger</button>
+    <button class="tbtn" onclick="Game.showQuests()">🗡 Quêtes</button>
+    <button class="tbtn" onclick="Game.showAchievements()">🏆 Hauts faits</button>
+    <button class="tbtn" onclick="Game.restart()">↺ Recommencer</button>
+  </div>
+</header>
+
+<div id="layout">
+  <div class="panel" id="main-panel">
+    <div id="location">…</div>
+    <div id="story"></div>
+    <div id="choices"></div>
+  </div>
+
+  <div id="sidebar">
+    <div class="panel" id="stats-panel">
+      <h3>✦ État</h3>
+      <div class="stat"><span>Nom</span><span class="val" id="s-name">—</span></div>
+      <div class="stat"><span>Acte</span><span class="val" id="s-act">I</span></div>
+      <div class="stat"><span>Vigueur</span><span class="val" id="s-hp">—</span></div>
+      <div class="bar" id="hp-bar"><div style="width:100%"></div></div>
+      <div class="stat"><span>Honneur</span><span class="val" id="s-honor">—</span></div>
+      <div class="bar" id="honor-bar"><div style="width:50%"></div></div>
+      <div class="stat"><span>Or</span><span class="val" id="s-gold">0</span></div>
+      <div class="stat"><span>Renoncement</span><span class="val" id="s-love">—</span></div>
+      <div class="stat"><span>Temps</span><span class="val" id="s-time">Aube</span></div>
+    </div>
+    <div class="panel">
+      <h3>🎒 Sacoche</h3>
+      <div id="inv"></div>
+      <h3 style="margin-top:12px">🎼 Savoirs</h3>
+      <div id="skills"></div>
+    </div>
+    <div class="panel">
+      <h3>📖 Journal</h3>
+      <div id="log"></div>
+    </div>
+  </div>
+</div>
+
+<div id="overlay"><div class="box" id="overlay-content"></div></div>
+
+<script>
+"use strict";
+/* ============================================================
+   L'OR DU RHIN — données : lieux, objets, quêtes, succès
+   ============================================================ */
+
+const LOCATIONS = {
+  // ---- Scène I : le Rhin ----
+  rhein_shallows: {
+    name: "Les bas-fonds du Rhin",
+    desc: (s) => `La lumière du matin d'or filtre à travers l'eau verte et claire. ${s.flags.maidens_met ? "Les ondes dansent autour de vous, pleines de rires étouffés." : "Quelque part, des rires de femmes résonnent dans le courant."} Un éclat d'or pur vacille sur un rocher au sommet d'une butte sous-marine.`,
+    exits: [
+      { to: "rhein_rock", label: "Nager vers le rocher lumineux" },
+      { to: "rhein_depths", label: "Plonger vers les profondeurs sombres" },
+      { to: "rhein_grotto", label: "Explorer la grotte de cristal" },
+      { to: "valhalla_gate", label: "Remonter à la surface et longer la rive vers les cimes", if: (s)=>s.flags.knows_valhalla }
+    ]
+  },
+  rhein_rock: {
+    name: "Le Rocher de l'Or",
+    desc: (s) => `Le fameux Or du Rhin, ${s.flags.gold_seen ? "que vous avez déjà contemplé" : "que vous voyez pour la première fois"}, brille d'un éclat que nul feu mortel ne saurait imiter. ${s.flags.maidens_met ? "Wellgunde, Woglinde et Floßhilde veillent à l'entour." : "Trois ondines nagent en cercle autour du rocher."}`,
+    exits: [ { to: "rhein_shallows", label: "Redescendre vers les bas-fonds" } ]
+  },
+  rhein_depths: {
+    name: "Les profondeurs du Rhin",
+    desc: () => `L'eau y est noire et froide. Des épaves de navires anciens gisent dans la vase ; des os de géants des temps passés s'y entassent. Au loin, une lueur rouge trahit l'entrée des grottes de Nibelheim.`,
+    exits: [
+      { to: "rhein_shallows", label: "Remonter vers la lumière" },
+      { to: "nibelheim_shaft", label: "Suivre la lueur rouge vers les galeries de Nibelheim", if: (s)=>s.flags.knows_nibelheim }
+    ]
+  },
+  rhein_grotto: {
+    name: "La grotte de cristal",
+    desc: (s) => `Des voiles de cristal tissent les parois. ${s.flags.grotto_song ? "Les cristaux résonnent encore de votre chant — un motif gravé y persiste." : "L'eau y chante toute seule : les cristaux amplifient chaque son. Une inscription naine gravée au fond dit : « Seul un chant juste ouvre le cœur de la pierre. »"}`,
+    exits: [ { to: "rhein_shallows", label: "Sortir de la grotte" } ]
+  },
+
+  // ---- Terres de surface ----
+  valhalla_gate: {
+    name: "Le pied du Walhalla",
+    desc: (s) => `Sur la hauteur verdoyante, la forteresse des dieux achève de se dresser : le Walhalla, promesse de Wotan, bâti par les géants. ${s.flags.freia_taken ? "Freia n'est plus là pour arroser les pommes d'or — les dieux commencent à pâlir." : "Freia, déesse de la jeunesse, garde ses pommes d'or près de la forteresse."}`,
+    exits: [
+      { to: "rhein_shallows", label: "Redescendre vers le Rhin" },
+      { to: "valhalla_hall", label: "Monter la rampe de pierre vers la salle du trône", if: (s)=>s.flags.wotan_met },
+      { to: "gods_field", label: "Traverser le pré des dieux", if: (s)=>s.flags.wotan_met },
+      { to: "giants_crag", label: "Monter au rocher des géants", if: (s)=>s.flags.giants_crag_open },
+      { to: "earth_mound", label: "Chercher le tertre d'Erda au-delà du pré", if: (s)=>s.flags.knows_erda },
+      { to: "final_shore", label: "Descendre au rivage du crépuscule", if: (s)=>s.flags.final_shore_open }
+    ]
+  },
+  gods_field: {
+    name: "Le pré des dieux",
+    desc: (s) => `Une prairie suspendue entre brumes et lumière. ${s.flags.fafner_gone ? "Il n'y paraît plus rien qu'un silence inquiet." : "Fasolt et Fafner y reposent, massifs comme des montagnes, l'œil fixé sur la forteresse qu'ils ont bâtie."}`,
+    exits: [
+      { to: "valhalla_gate", label: "Revenir au pied du Walhalla" },
+      { to: "rainbow_bridge", label: "S'avancer sur le pont de l'arc-en-ciel", if: (s)=>s.flags.bridge_built }
+    ]
+  },
+  valhalla_hall: {
+    name: "La salle du trône du Walhalla",
+    desc: (s) => `Des colonnes de pierre montent vers une voûte où s'enroulent des serpents de brume. ${s.flags.wotan_met ? "Wotan, la lance en main, y délibère." : "Un trône vide attend son maître."} Fricka veille, soucieuse, près d'un banc de pierre.`,
+    exits: [
+      { to: "valhalla_gate", label: "Descendre au pied du Walhalla" },
+      { to: "valhalla_rampart", label: "Monter au rempart", if: (s)=>s.act>=3 }
+    ]
+  },
+  earth_mound: {
+    name: "Le tertre d'Erda",
+    desc: () => `Un monticule de terre noire d'où suinte une brume verte. Tout son de vie s'y éteint. On dit que la prophétesse Erda, la plus vieille du monde, y dort et y veille à la fois.`,
+    exits: [ { to: "valhalla_gate", label: "Revenir vers le Walhalla" } ]
+  },
+  rainbow_bridge: {
+    name: "Le pont de l'arc-en-ciel",
+    desc: () => `Un arc de lumière et de brume relie la terre nouvelle au Walhalla. Donner y résonne encore, mais l'or maudit pèse sur chaque pas.`,
+    exits: [
+      { to: "gods_field", label: "Redescendre dans le pré" },
+      { to: "valhalla_hall", label: "Entrer triomphalement dans le Walhalla", if: (s)=>s.act>=4 }
+    ]
+  },
+
+  // ---- Scène II : Nibelheim ----
+  nibelheim_shaft: {
+    name: "Le puits des nains",
+    desc: (s) => `La vapeur y est épaisse et le vacarme des marteaux y roule sans fin. ${s.flags.mime_freed ? "Mime, l'épaule meurtrie mais libre, vous doit une fière chandelle." : "Un nain au torse noueux, Mime, y gémit devant une enclume."}`,
+    exits: [
+      { to: "rhein_depths", label: "Remonter vers le Rhin" },
+      { to: "nibelheim_forge", label: "Descendre à la grande forge" },
+      { to: "nibelheim_mines", label: "Prendre la galerie des mines" },
+      { to: "alberich_lair", label: "Se glisser vers l'antre d'Alberich", if: (s)=>s.flags.knows_lair }
+    ]
+  },
+  nibelheim_forge: {
+    name: "La grande forge de Nibelheim",
+    desc: (s) => `Des centaines de nains y peinent, fouettés par la peur d'Alberich. ${s.flags.forge_song ? "Un chant de forge que vous avez appris y circule encore." : "Nul n'y chante : le maître du Tarnhelm interdit la moindre joie."}`,
+    exits: [
+      { to: "nibelheim_shaft", label: "Remonter au puits" },
+      { to: "nibelheim_mines", label: "Aller aux mines" }
+    ]
+  },
+  nibelheim_mines: {
+    name: "Les mines de Nibelheim",
+    desc: (s) => `Des galeries s'enfoncent en zigzag. ${s.flags.mine_map ? "Grâce à la carte de Mime, vous savez où mènent les trois branches." : "Trois branches s'ouvrent, et un vent mauvais en sort."}`,
+    exits: [
+      { to: "nibelheim_shaft", label: "Revenir au puits" },
+      { to: "mine_deadfall", label: "Prendre la galerie effondrée", if: (s)=>s.flags.mine_map },
+      { to: "mine_lake", label: "Prendre la galerie inondée", if: (s)=>s.flags.mine_map },
+      { to: "mine_cache", label: "Prendre la galerie murée", if: (s)=>s.flags.mine_map }
+    ]
+  },
+  mine_deadfall: {
+    name: "La galerie effondrée",
+    desc: () => `Un éboulis bloque la voie, mais un cliquetis d'os et d'or s'y fait entendre. Un trésor oublié des anciens Nibelungs est enseveli là.`,
+    exits: [ { to: "nibelheim_mines", label: "Revenir aux mines" } ]
+  },
+  mine_lake: {
+    name: "La galerie inondée",
+    desc: () => `Un lac noir et immobile occupe le fond. Au milieu, sur un pilier, scintille quelque chose. Des bulles remontent : quelque chose vit dessous.`,
+    exits: [ { to: "nibelheim_mines", label: "Revenir aux mines" } ]
+  },
+  mine_cache: {
+    name: "La galerie murée",
+    desc: (s) => `Un mur de briques naines porte l'empreinte d'une main ouverte. ${s.flags.cache_open ? "Il est ouvert sur une cache pleine de vieil or." : "Il attend une main de chair pour s'ouvrir — nul nain ne le peut."}`,
+    exits: [ { to: "nibelheim_mines", label: "Revenir aux mines" } ]
+  },
+  alberich_lair: {
+    name: "L'antre d'Alberich",
+    desc: (s) => `Une salle de basalte poli où ${s.flags.alberich_captured ? "le trône est vide — son maître est prisonnier au Walhalla." : "Alberich siège, l'Anneau au doigt et le Tarnhelm à la ceinture."}`,
+    exits: [ { to: "nibelheim_shaft", label: "Fuir vers le puits des nains" } ]
+  },
+
+  // ---- Scène III / IV ----
+  giants_crag: {
+    name: "Le rocher des géants",
+    desc: (s) => `Un piton aride d'où l'on voit la terre entière. ${s.flags.fasolt_dead ? "Fafner veille seul sur le cadavre de son frère et sur l'or maudit." : "Fasolt et Fafner y attendent le tribut, l'œil dur."} La brume y sent l'orage.`,
+    exits: [
+      { to: "valhalla_gate", label: "Redescendre vers le Walhalla" },
+      { to: "earth_mound", label: "Chercher le tertre d'Erda", if: (s)=>s.flags.knows_erda }
+    ]
+  },
+  valhalla_rampart: {
+    name: "Le rempart du Walhalla",
+    desc: () => `De là-haut, la vallée du Rhin scintille. Les plaintes des filles du Rhin montent, à peine audibles, comme un reproche.`,
+    exits: [ { to: "valhalla_hall", label: "Rentrer dans la salle du trône" } ]
+  },
+  final_shore: {
+    name: "Le rivage du crépuscule",
+    desc: () => `Le Rhin s'y élargit, calme et perfide. Les trois filles du Rhin y attendent l'accomplissement de toutes choses. C'est ici que l'aventure se jugera.`,
+    exits: [ { to: "valhalla_gate", label: "Remonter vers le Walhalla", if:(s)=>!s.ending } ]
+  }
+};
+
+/* ---------- OBJETS ---------- */
+const ITEMS = {
+  lettre_wotan: { name: "Lettre scellée de Wotan", desc: "Un ordre de mission : « Compte l'or, surveille les serments. — W. »" },
+  perle: { name: "Perle de Woglinde", desc: "Une perle de nacre chantante, gage d'amitié du Rhin." },
+  corne: { name: "Cor de conque de Floßhilde", desc: "Appelle les eaux du Rhin en cas de péril (une seule fois)." },
+  tarlier: { name: "Tarnhelm (le heaume magique)", desc: "Ouvrage de Mime : transforme son porteur en forme ou en lieu quelconque." },
+  anneau: { name: "🜊 L'Anneau", desc: "L'anneau forgé dans l'or renié. Il confère le pouvoir de régner — et la malédiction d'Alberich." },
+  trefle_forge: { name: "Chant de forge de Nibelheim", desc: "Un air que les nains fredonnaient avant la tyrannie." },
+  carte_mines: { name: "Carte des mines de Mime", desc: "Trois branches, trois dangers, trois trésors." },
+  pomme: { name: "Pomme d'or de Freia", desc: "Un fruit de jeunesse : rend 10 vigueur." },
+  lance_eclat: { name: "Éclat de la lance de Wotan", desc: "Un éclat des traités gravés. Preuve de serment." },
+  lyre: { name: "Lyre de brume d'Erda", desc: "Jouée juste, elle endort ce qui veille." },
+  vieux_or: { name: "Vieil or des Nibelungs", desc: "Un magot ancien, lourd et froid." },
+  rune_mere: { name: "Rune de la Mère", desc: "Le savoir d'Erda, gravé dans l'os du monde." },
+  filet_mist: { name: "Filet de brume", desc: "Tissé du brouillard de Nibelheim : rend invisible un court instant." },
+  os_geant: { name: "Os de géant", desc: "Une clé massive et macabre — un levier digne de ce nom." },
+  diamant_nain: { name: "Diamant nain", desc: "Pierre de valeur, monnaie des profondeurs." },
+  epee_rhinemaide: { name: "Épée d'écume", desc: "Une lame d'eau vive qui ne coupe que la cupidité." }
+};
+
+/* ---------- QUÊTES ---------- */
+const QUESTS = {
+  rhein_promise: { name: "La promesse du Rhin", obj: ()=> "Aller au rivage du crépuscule et rendre l'or (fin)" },
+  watch_ring: { name: "Le secret de l'Or", obj: (s)=> s.flags.alberich_seen ? "Suivre Alberich à Nibelheim ✔" : "Découvrir ce que devient l'or volé" },
+  save_freia: { name: "Freia en péril", obj: (s)=> s.flags.ransom_paid ? "Freia est rançonnée ✔" : "Rassembler 50 pièces d'or de rançon pour les géants" },
+  gold_ransom: { name: "La rançon d'or", obj: (s)=> `Or réuni : ${Math.min(S.gold,50)}/50` },
+  spy_nibelheim: { name: "L'espion de Nibelheim", obj: (s)=> s.flags.alberich_captured ? "Alberich est capturé ✔ (faire rapport à Wotan)" : "Capturer Alberich par la ruse" },
+  mime_help: { name: "Le forgeron fouetté", obj: (s)=> s.flags.mime_freed ? "Mime est libre ✔" : "Libérer Mime" },
+  erda_riddles: { name: "Les énigmes d'Erda", obj: (s)=> `Énigmes résolues : ${((s.quests.erda_riddles||{}).prog||{}).solved||0}/3` },
+  tribute: { name: "Le tribut du rocher", obj: ()=>"Assister au paiement au rocher des géants" },
+  final_choice: { name: "Le destin de l'Anneau", obj: ()=>"Décider du sort de l'Anneau au rivage du crépuscule" }
+};
+
+/* ---------- SUCCÈS ---------- */
+const ACHS = {
+  baigneur: "Baigneur du Rhin — chanter avec les filles du Rhin",
+  archéologue: "Archéologue nain — ouvrir le magot de la galerie effondrée",
+  prisonnier_nain: "Preneur de nain — capturer Alberich",
+  sage_erda: "Sage d'Erda — résoudre les trois énigmes",
+  coeur_libre: "Cœur libre — refuser de renoncer à l'amour",
+  coeur_maudit: "Cœur maudit — renoncer à l'amour pour l'or",
+  chevalier_walhalla: "Chevalier du Walhalla — être adoubé par Wotan",
+  libérateur: "Libérateur — rendre l'or au Rhin",
+  couronne_maudite: "Roi maudit — garder l'Anneau pour soi",
+  chantre: "Chantre de Nibelheim — redonner le chant aux forgerons",
+  complet: "Œil de Wotan — terminer toutes les quêtes"
+};
+</script>
+<script>
+"use strict";
+/* ============================================================
+   L'OR DU RHIN — événements par lieu (PNJ, quêtes, énigmes)
+   ============================================================ */
+
+const EVENTS = {
+  rhein_shallows: [
+    { id: "meet_maidens", once: true, label: "Approcher les rires dans le courant",
+      run: () => {
+        sFlags("maidens_met");
+        narrate(`Trois ondines jaillissent de l'écume : **Woglinde**, l'aînée enjouée, **Wellgunde**, la moqueuse, et **Floßhilde**, la sage du Rhin.
+« Un mortel dans nos eaux ! » s'esclaffent-elles. « Gare à toi, baigneur : c'est ici que le nain Alberich renonça à l'amour pour l'or — et depuis, notre trésor nous brûle les doigts. »`);
+        startQuest("rhein_promise", "Aider les filles du Rhin à récupérer leur or");
+      }
+    },
+    { id: "dive_fish", label: "Pêcher dans les roseaux (gagner un peu d'or)",
+      run: () => { const g = 1 + Math.floor(Math.random()*3); S.gold += g; narrate(`Vous fouillez les roseaux et remontez ${g} pièce(s) d'or de bateaux échoués.`, "gold"); }
+    }
+  ],
+  rhein_rock: [
+    { id: "watch_gold", once: true, label: "Contempler l'Or du Rhin",
+      run: () => {
+        sFlags("gold_seen");
+        narrate(`L'or rougeoie comme un soleil captif. Woglinde glisse près de vous : « Beau, n'est-ce pas ? Un seul être qui renoncerait à l'amour pourrait en forger un anneau qui donnerait la puissance du monde. Mais qui renoncerait à l'amour ? »`, "rhine");
+        startQuest("watch_ring", "Découvrir le secret de l'Or");
+      }
+    },
+    { id: "alberich_scene", once: true, requires: (s)=>s.flags.gold_seen, label: "Observer : un nain grimpe vers l'or",
+      run: () => {
+        sFlags("alberich_seen"); sFlags("knows_nibelheim");
+        narrate(`Un nain velu surgit des algues : **Alberich**. Haletant d'amour, il courtise les ondines qui se moquent de lui cruellement.
+« Riez donc ! » crache-t-il soudain, l'œil allumé. « Je renonce à l'amour ! » — et saisissant l'or, il l'arrache au rocher. Les eaux hurlent.`, "danger");
+        narrate(`Alberich s'enfuit vers les profondeurs avec le trésor. Floßhilde vous fixe : « Retiens ce que tu as vu, étranger. Le monde va payer ce vol. »`);
+        advanceQuest("watch_ring", "seen");
+        if (S.quests.watch_ring && S.quests.watch_ring.state==="active") finishQuest("watch_ring");
+      }
+    },
+    { id: "sing_maidens", label: "Chanter avec les filles du Rhin (apprendre le motif)",
+      run: () => {
+        if (S.flags.maiden_song) { narrate("Vous reprenez ensemble le chant du Rhin ; les eaux s'apaisent."); return; }
+        sFlags("maiden_song"); addSkill("motif_rhein"); unlockAch("baigneur");
+        narrate(`Woglinde vous apprend le leitmotiv du Rhin : « Mi — ré — fa — la... » Les ondes portent votre voix. Vous gagnez le savoir 🎼 Motif du Rhin.`, "success");
+        honorUp(5);
+      }
+    },
+    { id: "corne_gift", requires:(s)=>s.flags.maiden_song && !s.flags.corne_given, label: "Demander la protection du Rhin à Floßhilde",
+      run: () => { sFlags("corne_given"); addItem("corne");
+        narrate(`Floßhilde vous remet un cor de conque : « Souffle dedans quand tout sera perdu. Le Rhin n'abandonne pas ses amis. »`, "rhine"); }
+    }
+  ],
+  rhein_depths: [
+    { id: "wreck_search", label: "Fouiller les épaves",
+      run: () => {
+        if (S.flags.wreck_done) { narrate("Les épaves n'ont plus rien à offrir."); return; }
+        sFlags("wreck_done"); addItem("diamant_nain"); S.gold += 5;
+        narrate(`Dans une cabine de bois pourri, vous trouvez un diamant nain et 5 pièces d'or.`, "gold");
+      }
+    },
+    { id: "bones_event", label: "Examiner les os de géants",
+      run: () => { if (S.flags.bones_taken) { narrate("Le tas d'os n'a plus rien d'utile."); return; }
+        sFlags("bones_taken"); addItem("os_geant"); narrate("Vous vous emparez d'un fémur de géant : une massue de fortune — et un levier digne de ce nom."); }
+    }
+  ],
+  rhein_grotto: [
+    { id: "crystal_song", label: "Chanter dans la grotte de cristal",
+      run: () => {
+        if (S.flags.grotto_song) { narrate("Les cristaux ruminent encore votre chant."); return; }
+        openRiddle(
+          "Le cristal exige une note juste : le prélude du Rheingold naît d'un accord tenu, immense, à la basse. Quel est le nom de cette note ? (indice : la tonalité de tout l'opéra)",
+          ["mi", "mi bémol", "mi bemol", "e-flat", "eb"],
+          () => { sFlags("grotto_song"); addSkill("motif_erda"); addItem("perle");
+            narrate(`Le cristal s'ouvre en gerbe de lumière. Une perle de nacre roule à vos pieds, et un savoir s'inscrit en vous : 🎼 Motif d'Erda — la voix des profondeurs vous répondra.`, "success"); honorUp(5); },
+          () => narrate("Les cristaux grincent et se referment. Réfléchissez : le prélude naît d'un accord de… (indice : la tonalité de tout l'opéra)", "danger")
+        );
+      }
+    }
+  ],
+  valhalla_gate: [
+    { id: "see_castle", once: true, label: "Admirer le Walhalla pour la première fois",
+      run: () => { sFlags("knows_valhalla");
+        narrate(`Une forteresse de pierre et de lumière couronne la hauteur : le **Walhalla**, la salle des dieux, bâtie en échange de la déesse Freia. Wotan l'arpente, ivre de sa grandeur ; Fricka, son épouse, y tremble déjà.`); }
+    },
+    { id: "meet_freia", once: true, label: "Parler à la déesse près des pommes d'or",
+      run: () => {
+        sFlags("freia_met");
+        narrate(`**Freia** accourt, les joues mouillées : « Mes frères Fasolt et Fafner réclament leur salaire ! Wotan leur a promis *moi* en paiement de la forteresse ! Sauve-moi, étranger, et je te donnerai une pomme de jeunesse. »`);
+        startQuest("save_freia", "Sauver Freia des géants");
+      }
+    },
+    { id: "freia_apple", requires:(s)=>s.quests.save_freia && s.quests.save_freia.state==='done' && !s.flags.apple_given, label: "Réclamer la pomme promise par Freia",
+      run: () => { sFlags("apple_given"); addItem("pomme"); narrate("Freia vous remet une pomme d'or : « Croque-la quand tes forces te quitteront. »", "success"); }
+    }
+  ],
+  gods_field: [
+    { id: "giants_talk", once: true, label: "Parler aux géants Fasolt et Fafner",
+      run: () => {
+        sFlags("giants_met");
+        narrate(`**Fasolt** (le sentimental) : « La forteresse est bâtie, dieu rusé. Nous voulons notre salaire : la femme aux pommes d'or. »
+**Fafner** (le froid) : « L'amour ne nourrit pas. L'or, si. Si le nain Alberich a volé l'or du Rhin, alors l'or vaut mieux que Freia. »`);
+        startQuest("gold_ransom", "Rassembler assez d'or pour rançonner Freia (50 pièces)");
+      }
+    },
+    { id: "giants_ransom", requires:(s)=>s.gold>=50 && s.flags.giants_met && !s.flags.ransom_paid, label: "Proposer l'or de rançon aux géants (50 pièces)",
+      run: () => {
+        S.gold -= 50; sFlags("ransom_paid");
+        narrate(`Fafner pèse votre or d'un regard de balance : « Cela suffit pour prix. Freia est libre. Mais si un seul doigt manque au compte… » Fasolt soupire : « Nous aurions préféré la femme. »`);
+        finishQuest("gold_ransom"); honorUp(15);
+        if (S.quests.save_freia && S.quests.save_freia.state==="active") finishQuest("save_freia");
+        narrate("Freia vous embrasse sur le front. Les dieux reprennent des couleurs.", "success");
+      }
+    }
+  ],
+  valhalla_hall: [
+    { id: "meet_wotan", once: true, label: "Se présenter à Wotan",
+      run: () => {
+        sFlags("wotan_met");
+        narrate(`**Wotan**, la lance aux traités gravés, vous dévisage : « Un mortel dans mes murs ? Soit. Il me faut un œil qui ne soit pas le mien : compte, épie, pèse. Alberich a volé l'or du Rhin et forge en bas un anneau de puissance. Rapporte-moi ce savoir, et je te ferai chevalier du Walhalla. »`);
+        startQuest("spy_nibelheim", "Espionner Alberich à Nibelheim");
+      }
+    },
+    { id: "fricka_talk", once: true, label: "Parler à Fricka",
+      run: () => { sFlags("fricka_met");
+        narrate(`**Fricka** : « Mon époux rêve de châteaux et d'éternité, et hypothèque l'amour pour ses murs. Retiens ceci, étranger : ce qui est promis doit être tenu — c'est gravé sur sa lance. Un jour, cette gravure le tuera. »`);
+        addSkill("lore_serment"); honorUp(5);
+      }
+    },
+    { id: "loge_talk", once: true, label: "Chercher le dieu du feu, Loge",
+      run: () => { sFlags("loge_met"); sFlags("knows_nibelheim"); sFlags("knows_lair");
+        narrate(`**Loge** jaillit d'un filet de flamme : « Le demi-dieu des malices, à votre service. Wotan veut l'or du nain ? Faisons simple : Alberich ne peut être pris que par ruse. Va à Nibelheim, flatte son orgueil, et quand il montrera son heaume magique… sais-le. Je te soufflerai le reste. »`);
+      }
+    },
+    { id: "donner_talk", once: true, label: "Parler à Donner, le dieu de l'orage",
+      run: () => { sFlags("donner_met");
+        narrate(`**Donner** fait craquer ses phalanges : « Tout ce bavardage d'or et de serments… Un jour je nettoierai l'air d'un coup de foudre. Si l'ennui te tue en bas, souviens-toi : tenir tête à un géant, c'est surtout ne pas trembler. »`);
+        addSkill("brave_orage");
+      }
+    },
+    { id: "froh_talk", once: true, label: "Parler à Froh",
+      run: () => { sFlags("froh_met");
+        narrate(`**Froh** sourit : « Le pont d'arc-en-ciel, c'est moi. Quand l'heure viendra de relier la terre aux dieux, je tisserai la lumière. Mais n'y marche pas avant que l'or soit rendu… ou tu porteras le poids du monde. »`);
+      }
+    },
+    { id: "wotan_report", requires:(s)=>s.flags.alberich_captured && !s.flags.wotan_reported, label: "Faire rapport à Wotan : Alberich est pris",
+      run: () => {
+        sFlags("wotan_reported"); S.act = Math.max(S.act,3); sFlags("giants_crag_open");
+        narrate(`Wotan écoute, la lèvre fine : « Le nain est enchaîné et son or est à nous. Viens au rocher des géants : le tribut sera compté, et je verrai si ton œil de mortel a bien compté. »`, "gold");
+        startQuest("tribute", "Aller au rocher des géants assister au paiement du tribut");
+      }
+    },
+    { id: "wotan_lance", requires:(s)=>s.flags.wotan_reported && !s.flags.lance_given, label: "Demander à Wotan un gage de sa lance",
+      run: () => { sFlags("lance_given"); addItem("lance_eclat");
+        narrate(`Wotan détache un éclat de sa lance : « Le bois des traités. Tant que tu le porteras, nul géant ne te fera de mal. Mais souviens-toi : les serments protègent autant qu'ils enchaînent. »`, "success"); }
+    },
+    { id: "wotan_knight", requires:(s)=>s.flags.wotan_reported && s.honor>=70 && !s.flags.knighted, label: "Demander à être fait chevalier du Walhalla (honneur ≥ 70)",
+      run: () => { sFlags("knighted"); unlockAch("chevalier_walhalla"); addItem("pomme");
+        narrate(`Wotan touche votre épaule de sa lance : « Honneur, vaillance, parole tenue : sois chevalier du Walhalla, mortel. Les murs que voici sont aussi un peu les tiens. »`, "gold"); honorUp(10); }
+    }
+  ],
+  earth_mound: [
+    { id: "erda_summon", once: true, label: "Appeler Erda depuis le tertre",
+      run: () => {
+        sFlags("erda_met"); S.flags.knows_erda = true;
+        narrate(`La terre s'entrouvre. **Erda**, la plus vieille du monde, monte, verte de sommeil : « Je sais tout ce qui fut. Tout ce qui est. Tout ce qui sera. Pose tes questions, mortel — mais chaque savoir a son prix. »`);
+        startQuest("erda_riddles", "Résoudre les trois énigmes d'Erda");
+      }
+    },
+    { id: "erda_riddle_go", requires:(s)=>s.flags.erda_met && s.quests.erda_riddles && s.quests.erda_riddles.state==='active', label: "Affronter une énigme d'Erda",
+      run: () => erdaRiddle()
+    },
+    { id: "erda_wisdom", requires:(s)=>s.flags.erda_riddles_done && !s.flags.erda_wisdom, label: "Écouter le dernier conseil d'Erda",
+      run: () => {
+        sFlags("erda_wisdom"); addItem("rune_mere");
+        narrate(`Erda pose sa main d'argile sur votre front : « Fuis l'anneau ! Malheur sans fin à qui le garde : la malédiction d'Alberich ronge tout ce qu'il touche. Si tu dois le tenir, tiens-le le moins possible. »`, "danger");
+        honorUp(10);
+      }
+    }
+  ],
+  nibelheim_shaft: [
+    { id: "mime_event", once: true, label: "Examiner le nain qui gémit",
+      run: () => {
+        sFlags("mime_met");
+        narrate(`**Mime**, le frère d'Alberich, sanglote sur une enclume : monstre à la tête osseuse, forgeron incomparable. « Mon frère m'a volé mon ouvrage ! Le Tarnhelm que *j'* ai forgé, il le porte ! Et l'anneau… l'anneau qu'il s'est fait à partir de l'or volé, il me fouette avec sa puissance ! »`);
+        startQuest("mime_help", "Aider Mime contre la tyrannie d'Alberich");
+      }
+    },
+    { id: "mime_free", requires:(s)=>s.flags.mime_met && !s.flags.mime_freed, label: "Libérer Mime du fouet d'Alberich",
+      run: () => {
+        sFlags("mime_freed"); addItem("carte_mines"); sFlags("mine_map");
+        narrate(`Vous brisez le fouet de fer qui liait Mime. Le nain, mi-reconnaissant mi-méfiant, vous glisse une carte : « Les mines. Trois galeries, trois dangers. Ne le dis pas à mon frère. »`, "success");
+        advanceQuest("mime_help","freed"); honorUp(10);
+        if (S.quests.mime_help && S.quests.mime_help.state==="active") finishQuest("mime_help");
+      }
+    },
+    { id: "mime_tarnhelm_lore", requires:(s)=>s.flags.mime_freed && !s.flags.mime_lore, label: "Interroger Mime sur le Tarnhelm",
+      run: () => { sFlags("mime_lore");
+        narrate(`Mime ricane : « Le Tarnhelm ? Mon chef-d'œuvre. Il change la taille et la forme : dragon, crapaud, pierre… tout ce que son porteur imagine. Mais il a une faiblesse : quand son porteur *reprend sa forme* pour se vanter, il est nu comme un ver. C'est là qu'il faut frapper. »`);
+        addSkill("tarnhelm_weakness");
+      }
+    },
+    { id: "mime_weapon", requires:(s)=>s.flags.mime_freed && !s.flags.mime_weapon, label: "Demander à Mime une arme de sa forge",
+      run: () => { sFlags("mime_weapon"); addItem("epee_rhinemaide");
+        narrate(`Mime trempe une lame dans l'eau qu'il fait venir du Rhin : « De l'écume de nos fontaines. Elle ne coupe ni chair ni os — seulement la cupidité. Sers-t'en contre un cœur d'or. »`, "success"); }
+    }
+  ],
+  nibelheim_forge: [
+    { id: "forge_song_event", label: "Redonner le chant aux forgerons",
+      run: () => {
+        if (S.flags.forge_song) { narrate("La forge fredonne désormais votre chant."); return; }
+        if (S.skills.includes("motif_rhein")) {
+          sFlags("forge_song"); addItem("trefle_forge"); addSkill("motif_forge"); unlockAch("chantre");
+          narrate(`Vous entonnez le motif du Rhin par-dessus les marteaux. Un à un, les nains relèvent la tête et reprennent un vieil air de forge. Un vieux nain vous remet le chant noté : « Pour ce qu'on n'avait plus osé chanter. »`, "success"); honorUp(10);
+        } else {
+          narrate("Les nains baissent la tête : « Chantons ? Alberich nous briserait les dents. » Il leur faudrait un chant venu d'ailleurs… peut-être des eaux du Rhin.");
+        }
+      }
+    },
+    { id: "forge_work", label: "Travailler à la forge (gagner de l'or)",
+      run: () => {
+        const g = 2 + Math.floor(Math.random()*4); S.gold += g; damage(1);
+        narrate(`Vous martelez une heure durant. Vos mains brûlent mais votre bourse grossit de ${g} pièces.`, "gold");
+        if (S.skills.includes("motif_forge")) { S.gold += 3; narrate("Le chant de forge porte vos coups : +3 pièces.", "gold"); }
+      }
+    }
+  ],
+  nibelheim_mines: [
+    { id: "mine_wander", label: "Écouter le vent des galeries (sans carte)",
+      run: () => {
+        const r = Math.random();
+        if (r < .4) { damage(3); narrate("Un éboulement vous frôle : -3 vigueur. Une carte vous aurait épargné cela.", "danger"); }
+        else { S.gold += 4; narrate("Vous ramassez 4 pièces dans une veine abandonnée.", "gold"); }
+      }
+    }
+  ],
+  mine_deadfall: [
+    { id: "deadfall_dig", label: "Creuser l'éboulis",
+      run: () => {
+        if (S.flags.deadfall_done) { narrate("Il n'y a plus que de la poussière."); return; }
+        if (S.inv.includes("os_geant")) {
+          sFlags("deadfall_done"); addItem("vieux_or"); S.gold += 20;
+          narrate(`Vous servez de l'os de géant comme d'un levier. Le rocher cède : un magot du vieil or des Nibelungs et 20 pièces !`, "gold");
+          unlockAch("archéologue");
+        } else { damage(4); narrate("Vous creusez à mains nues : -4 vigueur. Il vous faudrait un levier digne de ce nom.", "danger"); }
+      }
+    }
+  ],
+  mine_lake: [
+    { id: "lake_dive", label: "Plonger vers le pilier scintillant",
+      run: () => {
+        if (S.flags.lake_done) { narrate("Le lac est vide désormais."); return; }
+        if (S.skills.includes("motif_rhein")) {
+          sFlags("lake_done"); addItem("filet_mist"); S.gold += 10;
+          narrate(`Vous chantez le motif du Rhin. Les bulles s'apaisent, une forme d'eau se retire. Vous nagez jusqu'au pilier : un filet de brume et 10 pièces d'or !`, "success");
+        } else { damage(5); narrate("Quelque chose vous mord dans l'ombre : -5 vigueur. Les eaux noires ne répondent qu'aux chants du Rhin.", "danger"); }
+      }
+    }
+  ],
+  mine_cache: [
+    { id: "cache_open_ev", label: "Poser la main sur le mur nain",
+      run: () => {
+        if (S.flags.cache_open) { narrate("La cache est déjà vide."); return; }
+        sFlags("cache_open"); S.gold += 15; addItem("diamant_nain");
+        narrate(`Le mur reconnaît votre paume de chair. Il pivote : 15 pièces et un diamant nain dorment dans la cache.`, "gold");
+      }
+    }
+  ],
+  alberich_lair: [
+    { id: "alberich_confront", once: true, label: "Affronter Alberich sur son trône",
+      run: () => {
+        sFlags("alberich_talked");
+        narrate(`**Alberich** se dresse, l'Anneau au doigt : « Un mortel ? Les dieux m'ont volé l'amour des ondines, alors j'ai volé l'or. Avec l'anneau, je rassemblerai les Nibelungs, je prendrai le monde, et les dieux ramperont ! »`, "danger");
+        narrate("Il toise votre sacoche : « Que portes-tu là, espion ? Montre-moi si tu viens en ami… ou meurs comme un chien. »");
+      }
+    },
+    { id: "alberich_trick", requires:(s)=>s.flags.alberich_talked && !s.flags.alberich_tricked, label: "Flatter Alberich : lui faire démontrer le Tarnhelm",
+      run: () => {
+        if (S.skills.includes("tarnhelm_weakness")) {
+          sFlags("alberich_tricked");
+          narrate(`Vous louangez le heaume : « On dit qu'il change la forme… mais peut-il rendre *invisible* ? » Vantard, Alberich se dissout en brume — puis, pour prouver sa supériorité, reprend forme de nain en éclatant de rire.
+**C'est l'instant.** Vous le ceignez de vos bras, et le Tarnhelm tombe.`, "success");
+          honorUp(5);
+        } else {
+          damage(6);
+          narrate("Alberich se change en dragon et vous flanque un coup de queue : -6 vigueur. Sans connaître la faiblesse du heaume, la ruse échoue. Quelqu'un à Nibelheim la connaît sans doute…", "danger");
+        }
+      }
+    },
+    { id: "alberich_bind", requires:(s)=>s.flags.alberich_tricked && !s.flags.alberich_captured, label: "Lier Alberich et le hisser vers le Walhalla",
+      run: () => {
+        sFlags("alberich_captured");
+        narrate(`Lié et traîné hors de son royaume, Alberich hurla sa malédiction : « L'anneau ! Que qui le porte soit maudit : l'envie le rongera, la peur le tiendra, le meurtre le couronnera ! » Puis on l'emmena, enchaîné, vers les dieux.`, "danger");
+        finishQuest("spy_nibelheim");
+        narrate("Sa dépouille confisquée est là : le Tarnhelm, l'or du Rhin en lingots… et l'Anneau, au doigt du prisonnier.");
+        unlockAch("prisonnier_nain");
+      }
+    },
+    { id: "lair_loot", requires:(s)=>s.flags.alberich_captured && !s.flags.lair_looted, label: "Ramasser le butin de l'antre",
+      run: () => {
+        sFlags("lair_looted"); addItem("tarlier"); S.gold += 30;
+        narrate(`Vous empochez le **Tarnhelm** et 30 pièces de l'or du Rhin. L'Anneau, lui, est sur le doigt d'Alberich — et Wotan le voudra. Allez faire votre rapport au Walhalla.`, "gold");
+      }
+    }
+  ],
+  giants_crag: [
+    { id: "tribute_scene", once: true, requires:(s)=>s.flags.wotan_reported, label: "Assister au compte du tribut",
+      run: () => {
+        narrate(`Sur le rocher, l'or du Rhin est entassé. Alberich enchaîné ricanne. Wotan arrache l'Anneau de son doigt malgré ses cris — et le pose sur le tas.
+**Fasolt**, le sentimental, aime Freia : il demande qu'on la cache derrière l'or. **Fafner** compte, compte… et réclame l'Anneau, « le cœur de la puissance ». Fasolt, fou de douleur, refuse. Ils se battent. Fafner abat son frère d'un coup de masse.`, "danger");
+        narrate(`« Le premier effet de la malédiction », souffle Erda dans toutes les têtes à la fois. Freia est rendue, mais l'Anneau brûle de malheur.`, "dim");
+        sFlags("fasolt_dead"); sFlags("fafner_gone"); finishQuest("tribute");
+        S.act = 4; sFlags("bridge_built"); sFlags("final_shore_open");
+        narrate(`Froh tisse le **pont de l'arc-en-ciel**. Donner fait gronder le tonnerre pour purifier l'air. Les dieux s'apprêtent à monter au Walhalla — mais les filles du Rhin gémissent : « Rends l'or ! Rends l'or ! »`, "rhine");
+        startQuest("final_choice", "Aller au rivage du crépuscule et décider du sort de l'Anneau");
+        addItem("anneau");
+        narrate(`Dans la confusion, Wotan — la main brûlée par la malédiction — vous confie l'Anneau : « Tiens, mortel. Porte-le au rivage. Fais ce que je ne peux pas. » **L'Anneau est en votre possession.**`, "gold");
+      }
+    },
+    { id: "fafner_talk", requires:(s)=>s.flags.fasolt_dead && !s.flags.fafner_talked, label: "Parler à Fafner, seul avec son or",
+      run: () => {
+        sFlags("fafner_talked");
+        narrate(`**Fafner**, assis sur son frère mort et sur son or : « La puissance ne se partage pas, petit. J'emporterai tout ceci dans une grotte et je dormirai dessus. Si tu es sage, tu feras pareil : garde tout, n'aime rien, et tu vivras vieux. »`);
+        if (S.honor >= 60) { honorUp(5); narrate("Sa froideur vous glace le cœur — mais vous ne baissez pas les yeux. (+honneur)", "success"); }
+      }
+    },
+    { id: "crag_foret", label: "Fouiller les recoins du rocher",
+      run: () => { if (S.flags.crag_looted) { narrate("Rien de plus."); return; } sFlags("crag_looted"); S.gold += 8;
+        narrate("Vous ramassez 8 pièces échappées au tas du tribut.", "gold"); }
+    }
+  ],
+  valhalla_rampart: [
+    { id: "rampart_listen", label: "Écouter la vallée du haut du rempart",
+      run: () => {
+        if (S.skills.includes("motif_erda")) {
+          narrate(`Avec le savoir d'Erda, vous percez la brume : les plaintes du Rhin montent claires. « L'or ! Rends-nous l'or ! » Et sous le pont, quelque chose de noir veille — un nain évadé ?`, "rhine");
+          sFlags("heard_rhein");
+        } else narrate("Les plaintes du Rhin montent, à peine audibles. Il vous faudrait l'oreille des profondeurs.");
+      }
+    }
+  ],
+  final_shore: [
+    { id: "final_act", requires:(s)=>s.act>=4 && !s.ending, label: "⚡ Affronter l'heure du choix final",
+      run: () => finalChoice()
+    }
+  ]
+};
+</script>
+<script>
+"use strict";
+/* ============================================================
+   L'OR DU RHIN — extension : complainte, leitmotivs, tanière
+   ============================================================ */
+
+/* ---------- NOUVEAUX LIEUX ---------- */
+Object.assign(LOCATIONS, {
+  foret_brouillard: {
+    name: "La forêt de brume",
+    desc: (s) => `Des troncs noirs montent dans une brume laiteuse. ${s.flags.foret_lanterne ? "La lanterne des nains éclaire vos pas." : "On n'y voit pas à trois pas ; des yeux y brillent parfois."} On entend y résonner, très loin, le cor d'un chasseur perdu.`,
+    exits: [ { to: "valhalla_gate", label: "Revenir au pied du Walhalla" } ]
+  },
+  taniere_fafner: {
+    name: "La tanière de Fafner",
+    desc: (s) => `Une grotte basse et chaude, emplie du souffle d'un dragon ${s.flags.fafner_asleep ? "endormi par votre lyre." : "qui sommeille à demi"}. L'or y dort en montagnes, veillé par un œil jaune grand comme un bouclier.`,
+    exits: [ { to: "giants_crag", label: "Sortir de la tanière au grand jour" } ]
+  },
+  salle_tresors: {
+    name: "La salle des trésors du Walhalla",
+    desc: () => `Une aile neuve du Walhalla où Wotan entrepose les prémices de sa fortune : armes d'or, étoffes de brume, et des tablettes de serments anciens que nul ne doit lire.`,
+    exits: [ { to: "valhalla_hall", label: "Revenir dans la salle du trône" } ]
+  }
+});
+
+/* sorties vers les nouveaux lieux */
+LOCATIONS.valhalla_gate.exits.push(
+  { to: "foret_brouillard", label: "Pénétrer dans la forêt de brume" }
+);
+LOCATIONS.valhalla_hall.exits.push(
+  { to: "salle_tresors", label: "Pousser la porte de la salle des trésors", if: (s)=>s.flags.wotan_met }
+);
+LOCATIONS.giants_crag.exits.push(
+  { to: "taniere_fafner", label: "Suivre Fafner jusqu'à sa tanière", if: (s)=>s.flags.fafner_talked && s.act>=4 }
+);
+
+/* ---------- NOUVELLES QUÊTES & SUCCÈS ---------- */
+Object.assign(QUESTS, {
+  complainte: { name: "La Complainte des Nibelungs", obj: (s)=> `Vers retrouvés : ${s.flags.complainte_count||0}/9 (demandez à Hovbard, à la forge)` },
+  leitmotivs: { name: "L'oreille d'or", obj: (s)=> `Tours réussis au jeu des leitmotivs : ${s.flags.motif_wins||0}/3` },
+  taniere: { name: "Le trésor du dragon", obj: (s)=> s.flags.taniere_done ? "Fafner dort et l'or est à vous ✔" : "Entrer dans la tanière de Fafner et ressortir vivant" }
+});
+Object.assign(ACHS, {
+  barde_nibelung: "Barde des Nibelungs — reconstituer la Complainte des neuf vers",
+  oreille_doree: "Oreille d'or — réussir 3 tours du jeu des leitmotivs",
+  voleur_dragon: "Voleur de dragon — dépouiller la tanière de Fafner",
+  forestier: "Forestier de brume — percer les trois secrets de la forêt"
+});
+
+/* ---------- OUTILS ---------- */
+function countVerses(){ return Object.keys(S.flags).filter(k=>k.startsWith("vers_")).length; }
+function motifWinCount(){ return S.flags.motif_wins||0; }
+
+function pickVerse(locKey, text) {
+  const n = countVerses()+1;
+  if (n>9) { narrate("Vous connaissez déjà toute la complainte."); return; }
+  sFlags("vers_"+n); S.flags.complainte_count = n;
+  narrate(`📜 **Vers ${n}/9 de la Complainte des Nibelungs** : « ${text} »`, "gold");
+  logLine("Vers de la complainte : "+n+"/9");
+  if (n===9) {
+    narrate(`Les neuf vers s'assemblent dans votre mémoire comme les neuf mesures d'un chant perdu. Allez porter la complainte entière à Hovbard, le vieux nain de la forge.`, "success");
+  }
+}
+
+/* ---------- ÉVÉNEMENTS ADDITIONNELS ---------- */
+Object.assign(EVENTS, {
+
+  foret_brouillard: [
+    { id: "foret_lanterne", label: "Chercher une source de lumière",
+      run: () => {
+        if (S.flags.foret_lanterne) { narrate("Votre lanterne de nain éclaire déjà la brume."); return; }
+        if (S.flags.knows_nibelheim) {
+          sFlags("foret_lanterne");
+          narrate(`Sous une racine, une lanterne naine oubliée — les nains de Nibelheim ont dû passer par ici jadis. Vous l'allumez : la brume recule d'un pas.`, "success");
+          if (!S.flags.foret_secret1) { sFlags("foret_secret1"); honorUp(3);
+            narrate(`La lumière révèle une gravure sur un tronc : des vers à demi effacés.`, "gold");
+            pickVerse("foret1", "Sous la terre, le marteau chante, et nul n'entend nos pleurs."); }
+        } else narrate("Vos yeux seuls percent à peine la brume. Les nains, dit-on, savent faire des lanternes.");
+      }
+    },
+    { id: "foret_chasseur", once: true, label: "Suivre le son du cor",
+      run: () => {
+        sFlags("foret_chasseur");
+        narrate(`Un chasseur égaré, hagard, s'accroche à un bouleau : « Je poursuis un cerf blanc depuis trois jours et je tourne en rond ! Les dieux se moquent des mortels, ami. Prends mon cor de chasse — moi, je rentre avant que la nuit ne me garde ici. »`);
+        addItem("corne"); honorUp(3);
+      }
+    },
+    { id: "foret_boucle", label: "Marcher sans but dans la brume",
+      run: () => {
+        if (Math.random()<.5) { heal(3); narrate("La marche vous fait du bien : +3 vigueur. Mais vous tournez en rond.", "dim"); }
+        else { damage(2); narrate("Une branche vous fouette le visage : -2 vigueur. Cette forêt n'aime personne.", "danger"); }
+      }
+    },
+    { id: "foret_puits", once: true, label: "Examiner le vieux puits de pierres noires",
+      run: () => {
+        sFlags("foret_puits"); sFlags("foret_secret2");
+        narrate(`Un puits de pierres noires, si vieux que la mousse y a renoncé. Une voix en monte, grêle : « Un vers… j'avais un vers… » Vous vous penchez.`, "dim");
+        pickVerse("foret2", "L'or que nous portions à la lune est tombé au fond des eaux.");
+        S.gold += 6; narrate("Six pièces remontent avec le vers, jetées là par on ne sait qui.", "gold");
+      }
+    },
+    { id: "foret_clearing", once: true, label: "Trouver la clairière au cerf blanc",
+      run: () => {
+        sFlags("foret_clearing"); 
+        if (S.flags.foret_lanterne) {
+          sFlags("foret_secret3"); sFlags("forestier_ok");
+          narrate(`La lanterne découvre une clairière où paît un cerf blanc, immobile comme une statue. Il vous regarde, souffle sur vos mains, et disparaît. À sa place : une pomme d'or de Freia, tombée du Walhalla.`, "success");
+          addItem("pomme"); unlockAch("forestier"); honorUp(8);
+        } else {
+          damage(3);
+          narrate("Des formes blanches fuient entre les arbres. Vous trébuchez : -3 vigueur. Il faudrait de la lumière pour voir ce que cette clairière cache.", "danger");
+        }
+      }
+    }
+  ],
+
+  salle_tresors: [
+    { id: "tresors_tablettes", once: true, label: "Lire les tablettes des serments anciens",
+      run: () => {
+        sFlags("tresors_tablettes"); addSkill("lore_serment");
+        narrate(`Des tablettes de bronze alignent tous les serments des dieux depuis l'aube du monde : la forteresse promise, Freia gagée, et — déjà — l'or du Rhin volé qui ronge la liste comme du vert-de-gris. Vous comprenez enfin la logique des traités de Wotan.`, "success"); honorUp(5);
+        pickVerse("tresors", "Ce que la bouche promet, la pierre le grave à jamais.");
+      }
+    },
+    { id: "tresors_armes", label: "Examiner les armes d'or",
+      run: () => { if (S.flags.tresors_armes) { narrate("Les armes d'or n'ont plus de secrets."); return; }
+        sFlags("tresors_armes"); S.gold += 7;
+        narrate("Vous dénichez quelques menues pièces d'or détachées des armes : +7 pièces. Wotan ne remarquera jamais le manque.", "gold"); }
+    }
+  ],
+
+  taniere_fafner: [
+    { id: "taniere_lyre", once: true, label: "Jouer la lyre de brume d'Erda",
+      run: () => {
+        if (!S.inv.includes("lyre")) { damage(6);
+          narrate("Sans lyre, vous marchez sur une écaille : le dragon se réveille à demi et vous cingle du bout de la queue : -6 vigueur. Il vous faudrait de quoi l'endormir…", "danger"); return; }
+        sFlags("fafner_asleep"); sFlags("taniere_done");
+        narrate(`Vous jouez le motif d'Erda sur la lyre de brume. Le souffle du dragon s'allonge, s'apaise, devient marée. Fafner s'effondre dans un sommeil de pierre.`, "success");
+        finishQuest("taniere");
+      }
+    },
+    { id: "taniere_loot", requires:(s)=>s.flags.taniere_done && !s.flags.taniere_looted, label: "Dépouiller le trésor du dragon",
+      run: () => {
+        sFlags("taniere_looted"); S.gold += 40; addItem("vieux_or"); unlockAch("voleur_dragon");
+        narrate(`Vous emplissez votre sacoche discrètement : 40 pièces et une brique du vieil or des Nibelungs que Fafner avait confisquée. Le dragon ronfle — pour l'heure.`, "gold");
+        pickVerse("taniere", "Garde tout, n'aime rien, dors dessus : voilà tout notre savoir.");
+      }
+    },
+    { id: "taniere_verse", once: true, label: "Écouter ce que murmure le dragon",
+      run: () => {
+        if (S.flags.fafner_asleep) { pickVerse("taniere2", "Mon frère aimait ; moi j'ai compté ; l'or seul ne ment jamais."); honorUp(3); }
+        else { damage(3); narrate("Approcher son oreille d'un dragon à demi éveillé : -3 vigueur. Attendez qu'il dorme vraiment.", "danger"); }
+      }
+    }
+  ],
+
+  /* vers de la complainte dans les lieux existants */
+  rhein_grotto_extra: [
+    { id: "grotto_verse", once: true, requires:(s)=>s.flags.grotto_song, label: "Déchiffrer la gravure naine au fond du cristal",
+      run: () => pickVerse("grotto", "Le Rhin garde ce que le Rhin perd, et se souvient de tout.") }
+  ],
+  rhein_depths_extra: [
+    { id: "depths_verse", once: true, label: "Examiner la proue gravée d'une épave",
+      run: () => pickVerse("depths", "Nous avons forgé le heaume, et le heaume nous a forgés.") }
+  ],
+  nibelheim_shaft_extra: [
+    { id: "shaft_verse", once: true, label: "Soulever la dalle gravée près de l'enclume",
+      run: () => pickVerse("shaft", "Alberich nous a pris le chant, l'or, et jusqu'au nom.") }
+  ],
+  nibelheim_forge_extra: [
+    { id: "forge_verse", once: true, label: "Écouter le vieux Hovbard, le nain barde",
+      run: () => {
+        sFlags("hovbard_met");
+        narrate(`**Hovbard**, le plus vieux nain de la forge, un œil éteint et l'autre or, vous fait signe : « Il existait une Complainte, petit, neuf vers, celle qu'on chantait avant que le nain noir ne nous l'interdise. Retrouve les neuf vers épars dans le monde, et je te donnerai ce que la mémoire garde de mieux : le chant complet. »`);
+        startQuest("complainte", "Retrouver les neuf vers de la Complainte des Nibelungs");
+        pickVerse("forge", "Frère, frappe doucement : la pierre a un cœur qui bat.");
+      }
+    },
+    { id: "forge_hovbard_reward", requires:(s)=>s.flags.hovbard_met && countVerses()>=9 && !s.flags.complainte_done, label: "Apporter les neuf vers à Hovbard",
+      run: () => {
+        sFlags("complainte_done"); finishQuest("complainte"); unlockAch("barde_nibelung");
+        addSkill("motif_forge"); S.gold += 25; S.honor = Math.min(100, S.honor+10);
+        narrate(`Vous resumez les neuf vers devant Hovbard. Le vieux nain pleure des larmes de suie, puis se redresse et chante — la Complainte entière, interdite, magnifique. Toute la forge s'arrête pour écouter, et nul fouet ne s'abat.
+« Tu es des nôtres, étranger. Prends ceci. » Il vous remet une bourse (25 pièces) et le chant complet s'installe dans votre mémoire.`, "success");
+      }
+    },
+    { id: "forge_hovbard_hint", requires:(s)=>s.flags.hovbard_met && countVerses()<9, label: "Demander à Hovbard où chercher les vers",
+      run: () => {
+        const where = ["la grotte de cristal du Rhin","les épaves des profondeurs","la dalle du puits des nains","la forêt de brume","le puits de pierres noires","les tablettes du Walhalla","la tanière du dragon","près de l'enclume de Mime"];
+        narrate(`Hovbard compte sur ses doigts noirs : « Il en manque ${9-countVerses()}. Cherche du côté de : ${where.filter((w,i)=>!S.flags["vers_"+ (i+2)]).slice(0,3).join(" ; ")}… »`, "dim");
+      }
+    }
+  ],
+  nibelheim_mines_extra: [
+    { id: "mines_verse", once: true, label: "Lire les runes au carrefour des galeries",
+      run: () => pickVerse("mines", "Trois routes sous la terre : l'or, l'eau, la pierre — et nulle sortie.") }
+  ],
+  valhalla_rampart_extra: [
+    { id: "rampart_verse", once: true, label: "Gratter la mousse du rempart",
+      run: () => pickVerse("rampart", "Les dieux bâtissent haut ; les nains creusent vrai.") }
+  ],
+
+  /* ---- mini-jeu : le jeu des leitmotivs ---- */
+  rhein_rock_extra: [
+    { id: "motif_game", label: "🎼 Jouer au jeu des leitmotivs avec les ondines",
+      run: () => leitmotivGame() }
+  ],
+  valhalla_hall_extra: [
+    { id: "motif_game2", label: "🎼 Jouer au jeu des leitmotivs avec les dieux",
+      run: () => leitmotivGame() }
+  ]
+});
+
+
+/* fusion des événements additionnels dans les lieux existants */
+for (const [k, evs] of Object.entries(EVENTS)) {
+  if (k.endsWith("_extra")) {
+    const base = k.slice(0, -6);
+    if (!EVENTS[base]) EVENTS[base] = [];
+    EVENTS[base] = EVENTS[base].concat(evs);
+    delete EVENTS[k];
+  }
+}
+
+/* ---------- MINI-JEU : MÉMOIRE DES LEITMOTIVS ---------- */
+const MOTIF_CARDS = [
+  { id:"rhein", label:"🌊 Rhin", motif:"Mi — ré — fa — la" },
+  { id:"walhalla", label:"🏰 Walhalla", motif:"Sol — do — mi — sol (majesté)" },
+  { id:"anneau", label:"🜊 Anneau", motif:"Si — mi — si — mi (menace)" },
+  { id:"erda", label:"🌍 Erda", motif:"Ré — sol — ré (sommeil)" },
+  { id:"forge", label:"🔨 Forge", motif:"Ré — la — ré — la (marteau)" },
+  { id:"geants", label:"⛰ Géants", motif:"Do — sol — do (poids)" }
+];
+
+function leitmotivGame() {
+  const round = (S.flags.motif_round||0)+1;
+  S.flags.motif_round = round;
+  const len = 3 + Math.min(3, round);
+  const seq = Array.from({length: len}, ()=>MOTIF_CARDS[Math.floor(Math.random()*MOTIF_CARDS.length)]);
+  S.flags.last_seq = seq.map(m=>m.id);
+  const seqHtml = seq.map(m=>`<span class="tag skill">${m.label}</span>`).join(" ");
+  el("overlay-content").innerHTML = `
+    <h2>🎼 Le jeu des leitmotivs — tour ${round}</h2>
+    <p>Woglinde chante les motifs les uns après les autres. Retenez l'ordre, puis cliquez-les dans le même ordre !</p>
+    <p>${seqHtml}</p>
+    <p class="dim">Sequence : ${seq.map(m=>m.motif).join(" | ")}</p>
+    <div class="topbtns" id="motif-btns"></div>`;
+  el("overlay").style.display="flex";
+  const btns = el("motif-btns");
+  let input = [];
+  MOTIF_CARDS.forEach(m => {
+    const b = document.createElement("button");
+    b.className = "tbtn"; b.textContent = m.label;
+    b.onclick = () => {
+      input.push(m.id);
+      b.style.background = "rgba(212,175,55,.3)";
+      if (input.length === seq.length) {
+        closeOverlay();
+        if (input.every((v,i)=>v===seq[i].id)) {
+          S.flags.motif_wins = motifWinCount()+1;
+          narrate(`✔ Tour réussi (${motifWinCount()}/3) ! Les auditeurs applaudissent.`, "success");
+          S.gold += 5 + round*2; honorUp(3);
+          if (motifWinCount()>=3) { unlockAch("oreille_doree"); finishQuest("leitmotivs"); }
+          render();
+        } else {
+          narrate("✗ L'ordre se brise : les auditeurs rient gentiment. Réessayez !", "danger");
+          damage(1); render();
+        }
+      }
+    };
+    btns.appendChild(b);
+  });
+  if (!S.quests.leitmotivs) startQuest("leitmotivs", "Réussir 3 tours du jeu des leitmotivs");
+}
+
+/* ouvrir la quête de la tanière quand Fafner parle */
+const _orig_fafner_talk = EVENTS.giants_crag.find(e=>e.id==="fafner_talk");
+const _orig_run = _orig_fafner_talk.run;
+_orig_fafner_talk.run = function(){
+  _orig_run();
+  startQuest("taniere", "Suivre Fafner et entrer dans sa tanière");
+};
+</script>
+<script>
+"use strict";
+/* ============================================================
+   L'OR DU RHIN — moteur du jeu
+   ============================================================ */
+let S = null;
+
+function freshState() {
+  return {
+    name: "Étranger",
+    loc: "rhein_shallows",
+    act: 1,
+    hp: 20, hpMax: 20,
+    honor: 50,
+    gold: 0,
+    renounced: false,
+    time: 0,
+    inv: ["lettre_wotan"],
+    skills: [],
+    flags: {},
+    quests: {},
+    achievements: {},
+    visited: {},
+    log: [],
+    turn: 0,
+    ending: null
+  };
+}
+
+/* ---------- AFFICHAGE ---------- */
+const el = (id)=>document.getElementById(id);
+
+function narrate(text, cls) {
+  const d = document.createElement("div");
+  if (cls) d.className = cls;
+  d.innerHTML = md(text);
+  el("story").appendChild(d);
+  el("story").scrollTop = el("story").scrollHeight;
+}
+function md(t) {
+  return t.replace(/\*\*(.+?)\*\*/g, '<span class="gold">$1</span>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>');
+}
+function logLine(t) {
+  S.log.unshift(`[${S.turn}] ${t}`);
+  S.log = S.log.slice(0, 60);
+  const d = document.createElement("div"); d.textContent = `[${S.turn}] ${t}`;
+  el("log").prepend(d);
+  while (el("log").children.length > 60) el("log").lastChild.remove();
+}
+function sFlags(f){ S.flags[f] = true; }
+function addItem(id){ if(!S.inv.includes(id)) { S.inv.push(id); logLine("Obtenu : "+ITEMS[id].name); } }
+function removeItem(id){ S.inv = S.inv.filter(i=>i!==id); }
+function addSkill(id){ if(!S.skills.includes(id)) { S.skills.push(id); logLine("Savoir appris : "+skillName(id)); } }
+function damage(n){ S.hp = Math.max(0, S.hp-n); if (S.hp<=0) death(); }
+function heal(n){ S.hp = Math.min(S.hpMax, S.hp+n); }
+function honorUp(n){ S.honor = Math.min(100, S.honor+n); }
+function honorDown(n){ S.honor = Math.max(0, S.honor-n); }
+function unlockAch(id){ if(!S.achievements[id]) { S.achievements[id]=true; narrate(`🏆 Haut fait : ${ACHS[id]}`, "success"); logLine("Haut fait : "+ACHS[id]); } }
+
+/* ---------- QUÊTES ---------- */
+function startQuest(id, desc) {
+  if (S.quests[id]) return;
+  S.quests[id] = { state: "active", prog: {} };
+  narrate(`🗡 Nouvelle quête : **${QUESTS[id].name}** — ${desc}`, "dim");
+  logLine("Quête : "+QUESTS[id].name);
+}
+function advanceQuest(id, key, val) {
+  if (!S.quests[id]) startQuest(id, "");
+  if (val!==undefined) S.quests[id].prog[key]=val; else S.quests[id].prog[key]=true;
+}
+function finishQuest(id) {
+  if (!S.quests[id]) S.quests[id]={state:"done",prog:{}};
+  S.quests[id].state = "done";
+  narrate(`✔ Quête accomplie : **${QUESTS[id].name}** (+5 pièces)`, "success");
+  logLine("Quête accomplie : "+QUESTS[id].name);
+  S.gold += 5;
+  checkAllDone();
+}
+function checkAllDone(){
+  const ids = Object.keys(QUESTS);
+  if (ids.every(q => S.quests[q] && S.quests[q].state==="done")) unlockAch("complet");
+}
+
+/* ---------- ÉNIGMES ---------- */
+function openRiddle(question, answers, onWin, onLose) {
+  el("overlay-content").innerHTML = `
+    <h2>Énigme</h2><p>${question}</p>
+    <input class="riddle-input" id="riddle-in" placeholder="Votre réponse…">
+    <div class="topbtns"><button class="tbtn" id="riddle-ok">Répondre</button>
+    <button class="tbtn" id="riddle-no">Y renoncer</button></div>`;
+  el("overlay").style.display="flex";
+  const check = () => {
+    const v = el("riddle-in").value.trim().toLowerCase();
+    closeOverlay();
+    if (answers.some(a=>v.includes(a))) onWin(); else onLose(v);
+  };
+  el("riddle-ok").onclick = check;
+  el("riddle-no").onclick = () => { closeOverlay(); narrate("Vous renoncez… pour l'instant.","dim"); };
+  el("riddle-in").focus();
+  el("riddle-in").addEventListener("keydown", e=>{ if(e.key==="Enter") check(); });
+}
+function closeOverlay(){ el("overlay").style.display="none"; }
+
+const ERDA_RIDDLES = [
+  { q: "Première énigme : « Je suis promise avant d'être bâtie, je loge des dieux mais coûte une déesse. Que suis-je ? »",
+    a: ["walhalla","valhalla","forteresse","château","chateau"],
+    hint: "Regarde la hauteur…" },
+  { q: "Deuxième énigme : « Je suis forgé dans le reniement. Qui me porte tient le monde, et le perd. Que suis-je ? »",
+    a: ["anneau","bague","ring"],
+    hint: "Un cercle d'or…" },
+  { q: "Troisième énigme : « Je suis gravé dans le bois d'une lance : tenir, c'est vivre ; trahir, c'est périr. Que suis-je ? »",
+    a: ["serment","traité","traite","parole","promesse","contrat"],
+    hint: "Ce que Wotan grave sur sa lance…" }
+];
+function erdaRiddle() {
+  const solved = (S.quests.erda_riddles.prog.solved)||0;
+  if (solved >= 3) { narrate("Erda n'a plus d'énigmes pour vous."); return; }
+  const r = ERDA_RIDDLES[solved];
+  openRiddle(r.q, r.a,
+    () => {
+      const n = solved+1;
+      advanceQuest("erda_riddles","solved",n);
+      narrate(`Erda hoche la tête : « Juste. » (${n}/3)`, "success"); heal(5); honorUp(5);
+      if (n>=3) { sFlags("erda_riddles_done"); finishQuest("erda_riddles"); unlockAch("sage_erda"); addItem("lyre"); }
+    },
+    () => { narrate(`Erda secoue la terre : « Faux. ${r.hint} »`, "danger"); damage(2); }
+  );
+}
+
+/* ---------- CHOIX FINAL ---------- */
+function finalChoice() {
+  const hasRing = S.inv.includes("anneau");
+  el("overlay-content").innerHTML = `
+    <h2>L'heure du choix</h2>
+    <p>Au rivage du crépuscule, les filles du Rhin vous attendent. ${hasRing ? "L'Anneau brûle dans votre paume." : "L'Anneau est au doigt de Wotan, qui s'apprête à monter le pont d'arc-en-ciel."}</p>
+    <p>Que décidez-vous, ${S.name} ?</p>
+    <div class="topbtns" style="flex-direction:column">
+      <button class="tbtn" id="f1">Rendre l'or et l'Anneau au Rhin, quoi qu'il m'en coûte</button>
+      <button class="tbtn" id="f2">Garder l'Anneau : qui le tient règne sur le monde</button>
+      <button class="tbtn" id="f3">Réclamer l'Anneau à Wotan au nom des filles du Rhin (parole et serment)</button>
+      <button class="tbtn" id="f4">Jeter l'Anneau dans le Rhin et partir, sans rien demander</button>
+    </div>`;
+  el("overlay").style.display="flex";
+  el("f1").onclick = ()=>ending(hasRing ? "rhein_ring" : "rhein_plea");
+  el("f2").onclick = ()=>ending(hasRing ? "tyrant_self" : "tyrant_steal");
+  el("f3").onclick = ()=>ending("wotan_plea");
+  el("f4").onclick = ()=>ending("wanderer");
+}
+
+function ending(key) {
+  closeOverlay();
+  S.ending = key;
+  const honor = S.honor, ren = S.renounced;
+  const E = {
+    rhein_ring: {
+      t: "🜊 L'Or rendu au Rhin",
+      x: `Vous tendez l'Anneau aux ondines. Woglinde le fait tourner, rieuse ; l'or s'abîme dans l'eau et le Rhin brille comme aux premiers jours. Alberich, tapi sous le pont, hurle. Les dieux montent le pont d'arc-en-ciel, et la malédiction ne les suivra pas — cette fois. « Le monde te doit une chanson », dit Floßhilde. ${honor>=70?"Vous la méritez.":""}`,
+      ach: "libérateur"
+    },
+    rhein_plea: {
+      t: "🌊 La supplique du Rhin exaucée",
+      x: `Vous n'avez pas l'Anneau, mais vous avez la parole : devant tous, vous citez le serment gravé sur la lance de Wotan. Pris à son propre traité, le dieu cède l'Anneau aux filles du Rhin. Donner tonne ; l'or s'abîme dans l'eau. Le Walhalla se dresse, beau et vide de malédiction — pour un temps. Erda, quelque part, sourit dans son sommeil.`,
+      ach: "libérateur"
+    },
+    tyrant_self: {
+      t: "👑 Le roi maudit",
+      x: `Vous glissez l'Anneau à votre doigt. La puissance monte comme une fièvre. Mais la malédiction d'Alberich vous connaît déjà : ${ren?"vous aviez renié l'amour, et l'or vous reconnaît pour sien.":"vous qui aimiez encore, l'or vous apprendra à ne plus aimer."} Les jours qui suivent vous assoient sur un trône — et chaque nuit, un frère, un ami, un serviteur vous trahira. Le monde est à vous. Il n'y paraît personne pour le partager.`,
+      ach: "couronne_maudite"
+    },
+    tyrant_steal: {
+      t: "🗡 Le vol du siècle",
+      x: `Vous dérobez l'Anneau au doigt de Wotan au milieu du pont d'arc-en-ciel. Le dieu se retourne trop tard. Mais la malédiction ne fait pas de distinction entre voleurs : avant la nuit, les dieux vous chassent, et l'or vous pèse d'un poids de tombeau. Vous régnez sur rien, redouté de tous, aimé de personne.`,
+      ach: "couronne_maudite"
+    },
+    wotan_plea: {
+      t: "⚖️ Le droit contre la force",
+      x: `Vous montez sur le pont et, devant l'assemblée des dieux, vous demandez l'Anneau au nom des filles du Rhin. Wotan hésite — puis Erda elle-même se dresse de la brume : « Rends l'anneau ! » Le dieu, la lance en avant, cède l'or au Rhin. Fasolt est mort, mais le cycle de la malédiction est brisé pour un temps. Les dieux vous saluent comme un homme de parole. ${honor>=60?"Et votre honneur le prouve.":"Nul n'oubliera, pourtant, d'où vous venez."}`,
+      ach: "chevalier_walhalla"
+    },
+    wanderer: {
+      t: "🚶 L'étranger s'en va",
+      x: `Vous jetez l'or dans l'eau sans un mot et partez avant que quiconque ne vous remercie. Le Rhin chante derrière vous. Les dieux monteront leur pont ; l'or dormira ; et vous, vous porterez partout l'histoire d'un soir où le monde a failli se perdre — et où un étranger a choisi de n'en rien garder.`
+    }
+  };
+  const e = E[key];
+  if (e.ach) unlockAch(e.ach);
+  narrate(`**${e.t}**\n\n${e.x}`, "gold");
+  if (S.quests.rhein_promise && S.quests.rhein_promise.state==="active" && key!=="tyrant_self" && key!=="tyrant_steal") finishQuest("rhein_promise");
+  if (S.quests.final_choice && S.quests.final_choice.state==="active") finishQuest("final_choice");
+  narrate(`— FIN —\nHonneur final : ${S.honor}/100 · Or : ${S.gold} · Quêtes accomplies : ${Object.values(S.quests).filter(q=>q.state==="done").length}/${Object.keys(QUESTS).length}\nVous pouvez recommencer (bouton ↺) pour découvrir les ${Object.keys(E).length} fins.`, "dim");
+  render();
+}
+
+/* ---------- MORT ---------- */
+function death() {
+  narrate(`💀 Les ténèbres vous emportent. Mais le Rhin rend volontiers ceux qu'il aime : les ondes vous reposent sur la berge, une pomme d'or à la bouche.`, "danger");
+  S.hp = Math.max(6, Math.floor(S.hpMax/2));
+  S.loc = "rhein_shallows";
+  S.gold = Math.floor(S.gold/2);
+  narrate(`Vous perdez la moitié de votre or. La légende des héros est faite de ces retours.`, "dim");
+  render();
+}
+
+/* ---------- RENDU ---------- */
+function render() {
+  const loc = LOCATIONS[S.loc];
+  el("location").textContent = "◈ " + loc.name;
+  el("s-name").textContent = S.name;
+  el("s-act").textContent = ["I","II","III","IV"][S.act-1] || "IV";
+  el("s-hp").textContent = `${S.hp}/${S.hpMax}`;
+  el("hp-bar").firstElementChild.style.width = (100*S.hp/S.hpMax)+"%";
+  el("s-honor").textContent = S.honor+"/100";
+  el("honor-bar").firstElementChild.style.width = S.honor+"%";
+  el("s-gold").textContent = S.gold;
+  el("s-love").textContent = S.renounced ? "A renié l'amour" : "Aime encore";
+  el("s-time").textContent = ["Aube","Matin","Midi","Après-midi","Soir","Nuit"][Math.min(5,Math.floor(S.time/4))];
+  el("inv").innerHTML = S.inv.length ? S.inv.map(i=>`<span class="tag item" title="${(ITEMS[i].desc||"").replace(/"/g,'&quot;')}">${ITEMS[i].name}</span>`).join("") : '<span class="dim">— vide —</span>';
+  el("skills").innerHTML = S.skills.length ? S.skills.map(s=>`<span class="tag skill">${skillName(s)}</span>`).join("") : '<span class="dim">— aucun —</span>';
+  renderChoices();
+}
+function skillName(s) {
+  return { motif_rhein:"Motif du Rhin", motif_erda:"Motif d'Erda", motif_forge:"Chant de forge", lore_serment:"Lore des serments", tarnhelm_weakness:"Faiblesse du Tarnhelm", brave_orage:"Cœur d'orage", lore_alberich:"Colère d'Alberich" }[s] || s;
+}
+function renderChoices() {
+  const box = el("choices"); box.innerHTML = "";
+  const loc = LOCATIONS[S.loc];
+  const add = (label, fn, cls) => {
+    const b = document.createElement("button");
+    b.className = "choice" + (cls ? " "+cls : "");
+    b.innerHTML = md(label);
+    b.onclick = fn;
+    box.appendChild(b);
+  };
+  (EVENTS[S.loc]||[]).forEach(ev => {
+    if (ev.once && S.flags["ev_"+ev.id]) return;
+    if (ev.requires && !ev.requires(S)) return;
+    add(ev.label, ()=>runEvent(ev), "quest");
+  });
+  loc.exits.forEach(ex => {
+    if (ex.if && !ex.if(S)) return;
+    if (ex.to==="giants_crag" && !S.flags.giants_crag_open) return;
+    if (ex.to==="final_shore" && !S.flags.final_shore_open) return;
+    add("→ " + ex.label, ()=>{
+      S.loc = ex.to; S.turn++; S.time++;
+      narrate(`— ${LOCATIONS[ex.to].name} —`,"dim");
+      narrate(LOCATIONS[ex.to].desc(S));
+      S.visited[ex.to] = true;
+      render();
+    }, "");
+  });
+  add("🍎 Se reposer (et croquer une pomme si vous en avez une)", ()=>{
+    if (S.inv.includes("pomme")) { removeItem("pomme"); heal(10); narrate("La jeunesse revient dans vos membres : +10 vigueur.", "success"); }
+    else { heal(4); narrate("Vous vous reposez au bord de l'eau : +4 vigueur.", "dim"); }
+    S.time++; render();
+  }, "");
+  add("🜊 Méditer sur le renoncement à l'amour", ()=>{
+    if (S.renounced) { narrate("Vous avez déjà renié l'amour. L'or vous regarde comme un parent."); return; }
+    openRiddle("Renoncer à l'amour vous ouvrirait la puissance de l'or — comme Alberich. Voulez-vous sceller ce reniement ? (répondez NON pour refuser)",
+      ["non","jamais"],
+      ()=>{ narrate("Vous refusez. Le cœur reste entier — et l'or, muet.", "success"); honorUp(10); unlockAch("coeur_libre"); },
+      ()=>{ S.renounced=true; honorDown(20); narrate("Vous prononcez le reniement, comme Alberich jadis. Un frisson d'or monte du fond : l'Or du Rhin *vous reconnaît*. (-20 honneur)", "danger"); unlockAch("coeur_maudit"); render(); });
+  }, "gold");
+  if (S.inv.includes("corne") && S.hp <= 5) {
+    add("🐚 Souffler le cor de Floßhilde", ()=>{
+      removeItem("corne"); S.hp = S.hpMax; narrate("Les eaux du Rhin vous portent et vous rendent toute votre vigueur !", "rhine"); render();
+    }, "quest");
+  }
+}
+
+function runEvent(ev) {
+  S.flags["ev_"+ev.id] = true;
+  S.turn++;
+  ev.run();
+  if (S.hp>0 && !S.ending) render();
+}
+
+/* ---------- AIDE / QUÊTES / SUCCÈS ---------- */
+function showHelp() {
+  el("overlay-content").innerHTML = `<h2>📜 Comment jouer</h2>
+  <p><b>L'Or du Rhin</b> est une aventure textuelle qui suit les quatre scènes du <em>Rheingold</em> de Wagner : le Rhin, Nibelheim, le rocher des géants, et l'entrée au Walhalla.</p>
+  <p>• <b>Choix</b> : cliquez sur les actions. Les boutons à liseré bleu sont des événements/quêtes, les flèches → sont des déplacements.<br>
+  • <b>Vigueur</b> : votre santé. À zéro, le Rhin vous ramène — au prix de la moitié de votre or.<br>
+  • <b>Honneur</b> : votre intégrité. Il conditionne certaines réactions et certaines fins.<br>
+  • <b>Or</b> : 50 pièces rançonnent Freia. On en gagne en travaillant, fouillant, chantant.<br>
+  • <b>Savoirs</b> : leitmotivs et lores qui débloquent des voies (le motif du Rhin apaise les eaux noires, la faiblesse du Tarnhelm permet la ruse…).<br>
+  • <b>Méditer</b> : renier l'amour change le cours de certaines scènes — et votre honneur.<br>
+  • Il existe <b>6 fins</b>, 9 quêtes, 3 énigmes d'Erda, des trésors cachés et 11 hauts faits. Sauvegardez souvent !</p>
+  <div class="topbtns"><button class="tbtn" onclick="document.getElementById('overlay').style.display='none'">Fermer</button></div>`;
+  el("overlay").style.display="flex";
+}
+function showQuests() {
+  let h = "<h2>🗡 Journal des quêtes</h2>";
+  for (const [id,q] of Object.entries(QUESTS)) {
+    const st = S.quests[id] ? S.quests[id].state : "inconnue";
+    h += `<p><b>${q.name}</b> — ${st==="done"?"✔ accomplie":st==="active"?"en cours":"non découverte"}<br><span class="dim">${st==="done"?"":q.obj(S)}</span></p>`;
+  }
+  h += `<div class="topbtns"><button class="tbtn" onclick="document.getElementById('overlay').style.display='none'">Fermer</button></div>`;
+  el("overlay-content").innerHTML = h; el("overlay").style.display="flex";
+}
+function showAchievements() {
+  let h = "<h2>🏆 Hauts faits</h2>";
+  for (const [id,d] of Object.entries(ACHS)) h += `<p>${S.achievements[id]?"🟡":"⚫"} <span class="${S.achievements[id]?"":"dim"}">${d}</span></p>`;
+  h += `<div class="topbtns"><button class="tbtn" onclick="document.getElementById('overlay').style.display='none'">Fermer</button></div>`;
+  el("overlay-content").innerHTML = h; el("overlay").style.display="flex";
+}
+
+/* ---------- SAUVEGARDE ---------- */
+function saveGame() { localStorage.setItem("rheingold_save", JSON.stringify(S)); narrate("💾 Partie sauvegardée.", "success"); }
+function loadGame() {
+  const raw = localStorage.getItem("rheingold_save");
+  if (!raw) { narrate("Aucune sauvegarde trouvée.", "dim"); return; }
+  S = JSON.parse(raw); narrate("📂 Sauvegarde chargée.", "success"); render();
+}
+function restart() {
+  if (!confirm("Recommencer une nouvelle partie ? (la sauvegarde locale est conservée)")) return;
+  S = freshState(); el("story").innerHTML=""; el("log").innerHTML=""; intro();
+}
+
+/* ---------- INTRO ---------- */
+function intro() {
+  el("overlay-content").innerHTML = `<h2>🜊 L'Or du Rhin</h2>
+  <p><em>« Rheingold ! Rheingold ! »</em> — Au commencement du <em>Ring</em> de Wagner, l'or du Rhin brille au fond de l'eau, les dieux contractent des dettes, et un nain renonce à l'amour.</p>
+  <p>Vous êtes <b>l'Étranger</b>, un mortel embarqué malgré lui dans les affaires des dieux. Comment appelez-vous votre héros ?</p>
+  <input class="riddle-input" id="hero-name" placeholder="Votre nom (ou laissez vide : « Étranger »)">
+  <div class="topbtns"><button class="tbtn" id="begin">Commencer l'aventure</button></div>`;
+  el("overlay").style.display="flex";
+  el("begin").onclick = () => {
+    const n = el("hero-name").value.trim();
+    if (n) S.name = n;
+    closeOverlay();
+    narrate(`Le prélude monte des profondeurs : un accord de mi bémol, immense, comme l'eau qui dort. Vous vous réveillez dans le lit du Rhin, étrangement capable d'y respirer. Une lettre scellée flotte près de vous : « Compte l'or, surveille les serments. — W. »`, "rhine");
+    narrate(LOCATIONS.rhein_shallows.desc(S));
+    render();
+  };
+}
+
+/* ---------- DÉMARRAGE ---------- */
+S = freshState();
+intro();
+
+const Game = { saveGame, loadGame, restart, showHelp, showQuests, showAchievements };
+</script>
+</body>
+</html>
